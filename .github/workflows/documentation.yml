@@ -1,4 +1,4 @@
-name: Generate README
+name: Build and Publish Documentation
 
 on:
   push:
@@ -6,40 +6,35 @@ on:
       - release
 
 jobs:
-  update-readme:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Get Commit Information
-      id: get_commit_info
-      run: |
-        echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
-        git log -1 --pretty=%B >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-        echo "COMMIT_HASH<<EOF" >> $GITHUB_ENV
-        git rev-parse HEAD >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0'
 
-    - name: Generate README.md
-      run: |
-        echo "# Project Name" > README.md
-        echo "## Latest Commit" >> README.md
-        echo "### Commit Hash: ${{ env.COMMIT_HASH }}" >> README.md
-        echo "### Commit Message: ${{ env.COMMIT_MESSAGE }}" >> README.md
-        echo "### Date: $(date)" >> README.md
-        echo "## Description" >> README.md
-        echo "This README file was automatically generated." >> README.md
-  
-    - name: Commit and Push README
-      run: |
-        git config --local user.name "github-actions"
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git add README.md
-        git commit -m "Update README.md for commit ${{ env.COMMIT_HASH }}"
-        git push origin release
-      env:
-        GITHUB_TOKEN: ${{ secrets.FOR_TRPO2 }}
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
 
+      - name: Generate Documentation
+        run: |
+          doxygen Doxyfile
+
+      - name: Prepare docs for GitHub Pages
+        run: |
+          cp -r docs/html/* docs/ # выходные файлы документации
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages
+          publish_repo: ${{ github.repository }}

@@ -1,0 +1,5 @@
+PROJECT_NAME           = "My Project"
+OUTPUT_DIRECTORY       = docs
+RECURSIVE             = YES
+INPUT                 = src # путь к вашим исходным файлам
+GENERATE_HTML         = YES
