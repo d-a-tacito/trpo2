@@ -1,4 +1,4 @@
-name: Update README
+name: Generate README
 
 on:
   push:
@@ -8,38 +8,37 @@ on:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-      
-    - name: Read current value from README
-      id: read_number
+
+    - name: Get Commit Information
+      id: get_commit_info
       run: |
-        if [ -f README.md ]; then
-          number=$(grep -o '[0-9]*' README.md)
-          echo "Current number: $number"
-        else
-          number=0
-          echo "Current number: $number (file not found)"
-        fi
-        echo "::set-output name=current_number::$number"
-      
-    - name: Increment number
-      id: increment_number
+        echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
+        git log -1 --pretty=%B >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+        echo "COMMIT_HASH<<EOF" >> $GITHUB_ENV
+        git rev-parse HEAD >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+    - name: Generate README.md
       run: |
-        new_number=$((${{ steps.read_number.outputs.current_number }} + 1))
-        echo "New number: $new_number"
-        echo "::set-output name=new_number::$new_number"
-      
-    - name: Update README.md
+        echo "# Project Name" > README.md
+        echo "## Latest Commit" >> README.md
+        echo "### Commit Hash: ${{ env.COMMIT_HASH }}" >> README.md
+        echo "### Commit Message: ${{ env.COMMIT_MESSAGE }}" >> README.md
+        echo "### Date: $(date)" >> README.md
+        echo "## Description" >> README.md
+        echo "This README file was automatically generated." >> README.md
+  
+    - name: Commit and Push README
       run: |
-        echo "${{ steps.increment_number.outputs.new_number }}" > README.md
-      
-    - name: Commit changes
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.name "github-actions"
+        git config --local user.email "github-actions@github.com"
         git add README.md
-        git commit -m "Increment README number"
+        git commit -m "Update README.md for commit ${{ env.COMMIT_HASH }}"
         git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.FOR_TRPO2 }}
