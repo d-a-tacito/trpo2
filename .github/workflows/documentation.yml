@@ -41,4 +41,4 @@ jobs:
         git commit -m "Update README.md for commit ${{ env.COMMIT_HASH }}"
         git push
       env:
-        GITHUB_TOKEN: ${{ secrets.FOR_TRPO2 }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
