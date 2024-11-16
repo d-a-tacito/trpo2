@@ -1,4 +1,4 @@
-name: Generate Documentation
+name: Update README
 
 on:
   push:
@@ -6,29 +6,39 @@ on:
       - release
 
 jobs:
-  build:
+  update-readme:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up .NET
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '8.0'
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0'
 
-    - name: Install DocFX
-      run: |
-        dotnet tool install -g docfx
-        echo "${{ github.env.PATH }}:/root/.dotnet/tools" >> $GITHUB_PATH
+      - name: Get commit info
+        id: commit_info
+        run: |
+          echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+          echo "COMMIT_AUTHOR=$(git log -1 --pretty=%an)" >> $GITHUB_ENV
+          echo "COMMIT_DATE=$(git log -1 --pretty=%cd)" >> $GITHUB_ENV
 
-    - name: Build documentation
-      run: |
-        docfx docfx.json
+      - name: Generate README.md
+        run: |
+          echo "# Project Title" > README.md
+          echo "" >> README.md
+          echo "## Latest Commit" >> README.md
+          echo "- **Author:** $COMMIT_AUTHOR" >> README.md
+          echo "- **Date:** $COMMIT_DATE" >> README.md
+          echo "- **Message:** $COMMIT_MESSAGE" >> README.md
 
-    - name: Upload documentation artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: docs
-        path: _site
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Update README.md with latest commit info"
+          git push
+
