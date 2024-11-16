@@ -17,4 +17,12 @@ public class UnitTest1
         var actual = 16 / 4;
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void Test3()
+    {
+        var expected = 10;
+        var actual = 5 * 2;
+        Assert.Equal(expected, actual);
+    }
 }
