@@ -25,12 +25,12 @@ jobs:
 
       - name: Generate Documentation
         run: |
-          cd ./
+          cd ConsoleApp1
           doxygen Doxyfile
 
       - name: Prepare docs for GitHub Pages
         run: |
-          cp -r ./
+          cp -r ConsoleApp1
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
