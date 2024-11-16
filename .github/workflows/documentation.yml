@@ -30,11 +30,11 @@ jobs:
 
       - name: Prepare docs for GitHub Pages
         run: |
-          cp -r ConsoleApp1 ./docs
+          cp -r ConsoleApp1/docs ./docs
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }} # Или используйте ${ { secrets.PERSONAL_ACCESS_TOKEN }} если требуется
           publish_dir: ./docs
-          publish_branch: release # Замените на нужную вам ветку
+          publish_branch: gh-pages # Измените на gh-pages или любую другую ветку для публикации
