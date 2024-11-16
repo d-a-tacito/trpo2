@@ -1,4 +1,4 @@
-name: Update README
+name: Update README on Release Commit
 
 on:
   push:
@@ -10,35 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '8.0'
+    - name: Get Commit Info
+      id: commit_info
+      run: |
+        echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+        echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        echo "COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an')" >> $GITHUB_ENV
+        echo "COMMIT_DATE=$(git log -1 --pretty=format:'%cd')" >> $GITHUB_ENV
 
-      - name: Get commit info
-        id: commit_info
-        run: |
-          echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-          echo "COMMIT_AUTHOR=$(git log -1 --pretty=%an)" >> $GITHUB_ENV
-          echo "COMMIT_DATE=$(git log -1 --pretty=%cd)" >> $GITHUB_ENV
+    - name: Create README.md
+      run: |
+        echo "# Release Commit Info" > README.md
+        echo "## Commit Message" >> README.md
+        echo "${{ env.COMMIT_MESSAGE }}" >> README.md
+        echo "## Commit Hash" >> README.md
+        echo "${{ env.COMMIT_HASH }}" >> README.md
+        echo "## Author" >> README.md
+        echo "${{ env.COMMIT_AUTHOR }}" >> README.md
+        echo "## Date" >> README.md
+        echo "${{ env.COMMIT_DATE }}" >> README.md
 
-      - name: Generate README.md
-        run: |
-          echo "# Project Title" > README.md
-          echo "" >> README.md
-          echo "## Latest Commit" >> README.md
-          echo "- **Author:** $COMMIT_AUTHOR" >> README.md
-          echo "- **Date:** $COMMIT_DATE" >> README.md
-          echo "- **Message:** $COMMIT_MESSAGE" >> README.md
+    - name: Commit README.md
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add README.md
+        git commit -m "Update README.md with latest commit info" || echo "No changes to commit"
 
-      - name: Commit changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add README.md
-          git commit -m "Update README.md with latest commit info"
-          git push
-
+    - name: Push changes
+      run: |
+        git push origin release
